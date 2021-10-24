@@ -3,13 +3,19 @@
     "target": "esnext",
     "useDefineForClassFields": true,
     "module": "esnext",
-    "moduleResolution": "node",
-    "strict": true,
+    "moduleResolution": "node", // 选择模块解析策略
+    "strict": false, // 不启用所有严格类型检查选项
     "jsx": "preserve",
-    "sourceMap": true,
+    "sourceMap": true, // 编译后同时生成对应的 map路径映射文件
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "lib": ["esnext", "dom"]
+    "noImplicitAny": false, // 在表达式和声明上有隐含的 any类型时不报错
+    "lib": ["esnext", "dom"], // 指定编译中的库文件,部分es6新特性需要依赖es6lib
+    "baseUrl": ".",
+    "paths": {
+      "/@/*": ["src/*"]
+    },
+    "types": ["element-plus/global"]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
 }
