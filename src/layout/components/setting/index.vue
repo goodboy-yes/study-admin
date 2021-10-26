@@ -3,24 +3,21 @@ import { split } from "lodash-es";
 import Panel from "../panel/index.vue";
 import { useRouter } from "vue-router";
 import { emitter } from "/@/utils/mitt";
-import { templateRef } from "@vueuse/core";
+import { templateRef, useCssVar } from "@vueuse/core";
 import { debounce } from "/@/utils";
 import { useAppStoreHook } from "/@/store/modules/app";
 import { storageLocal, storageSession } from "/@/utils/storage";
+import { storeToRefs } from 'pinia'
 import {
   reactive,
   ref,
   unref,
   watch,
   useCssModule,
-  getCurrentInstance,
 } from "vue";
 
 const router = useRouter();
 const { isSelect } = useCssModule();
-
-const instance =
-  getCurrentInstance().appContext.config.globalProperties.$storage;
 
 // 默认灵动模式
 const markValue = ref(storageLocal.getItem("showModel") || "smart");
@@ -82,45 +79,25 @@ const tagsChange = () => {
   emitter.emit("tagViewsChange", showVal);
 };
 
-function onReset() {
-  storageLocal.clear();
-  storageSession.clear();
-  router.push("/login");
-}
-
-function onChange({ label }) {
-  storageLocal.setItem("showModel", label);
-  emitter.emit("tagViewsShowModel", label);
+function onChange(value) {
+  storageLocal.setItem("showModel", value);
+  emitter.emit("tagViewsShowModel", value);
 }
 
 const verticalDarkDom = templateRef<HTMLElement | null>(
   "verticalDarkDom",
   null
 );
-const verticalLightDom = templateRef<HTMLElement | null>(
-  "verticalLightDom",
-  null
-);
 const horizontalDarkDom = templateRef<HTMLElement | null>(
   "horizontalDarkDom",
   null
 );
-const horizontalLightDom = templateRef<HTMLElement | null>(
-  "horizontalLightDom",
-  null
-);
+const store = useAppStoreHook()
+const { layout:systemLayout } = storeToRefs(store)
 
-let dataTheme = ref(
-  getCurrentInstance()!.appContext.config.globalProperties.$config
-);
-
-if (unref(dataTheme)) {
-  // 设置主题
-  let theme = split(unref(dataTheme), "-")[1];
-  window.document.body.setAttribute("data-theme", theme);
+if (unref(systemLayout)) {
   // 设置导航模式
-  let layout = split(unref(dataTheme), "-")[0];
-  window.document.body.setAttribute("data-layout", layout);
+  window.document.body.setAttribute("data-layout", unref(systemLayout));
 }
 
 // 侧边栏Logo
@@ -137,45 +114,32 @@ function setFalse(Doms): any {
   });
 }
 
-watch(instance, ({ layout }) => {
+watch(systemLayout, (layout) => {
   switch (layout["layout"]) {
-    case "vertical-dark":
+    case "vertical":
       toggleClass(true, isSelect, unref(verticalDarkDom));
       debounce(
-        setFalse([verticalLightDom, horizontalDarkDom, horizontalLightDom]),
+        setFalse([horizontalDarkDom]),
         50
       );
       break;
-    case "vertical-light":
-      toggleClass(true, isSelect, unref(verticalLightDom));
-      debounce(
-        setFalse([verticalDarkDom, horizontalDarkDom, horizontalLightDom]),
-        50
-      );
-      break;
-    case "horizontal-dark":
+    case "horizontal":
       toggleClass(true, isSelect, unref(horizontalDarkDom));
       debounce(
-        setFalse([verticalDarkDom, verticalLightDom, horizontalLightDom]),
-        50
-      );
-      break;
-    case "horizontal-light":
-      toggleClass(true, isSelect, unref(horizontalLightDom));
-      debounce(
-        setFalse([verticalDarkDom, verticalLightDom, horizontalDarkDom]),
+        setFalse([verticalDarkDom]),
         50
       );
       break;
   }
 });
 
-function setTheme(layout: string, theme: string) {
-  dataTheme.value.Layout = `${layout}-${theme}`;
+function setTheme(layout: string) {
   window.document.body.setAttribute("data-layout", layout);
-  window.document.body.setAttribute("data-theme", theme);
-  instance.layout = { layout: `${layout}-${theme}` };
   useAppStoreHook().setLayout(layout);
+}
+
+const changeMainColor = (e, val) => {
+  document.documentElement.style.setProperty(val, e.target.value);
 }
 </script>
 
@@ -183,51 +147,36 @@ function setTheme(layout: string, theme: string) {
   <Panel>
     <el-divider>主题风格</el-divider>
     <ul class="theme-stley">
-      <el-tooltip class="item" content="左侧菜单暗色模式" placement="bottom">
-        <li
-          :class="dataTheme.Layout === 'vertical-dark' ? $style.isSelect : ''"
-          ref="verticalDarkDom"
-          @click="setTheme('vertical', 'dark')"
-        >
-          <div></div>
-          <div></div>
-        </li>
-      </el-tooltip>
-
-      <el-tooltip class="item" content="左侧菜单亮色模式" placement="bottom">
-        <li
-          :class="dataTheme.Layout === 'vertical-light' ? $style.isSelect : ''"
-          ref="verticalLightDom"
-          @click="setTheme('vertical', 'light')"
-        >
-          <div></div>
-          <div></div>
-        </li>
-      </el-tooltip>
-
-      <el-tooltip class="item" content="顶部菜单暗色模式" placement="bottom">
-        <li
-          :class="dataTheme.Layout === 'horizontal-dark' ? $style.isSelect : ''"
-          ref="horizontalDarkDom"
-          @click="setTheme('horizontal', 'dark')"
-        >
-          <div></div>
-          <div></div>
-        </li>
-      </el-tooltip>
-
-      <el-tooltip class="item" content="顶部菜单亮色模式" placement="bottom">
-        <li
-          :class="
-            dataTheme.Layout === 'horizontal-light' ? $style.isSelect : ''
-          "
-          ref="horizontalLightDom"
-          @click="setTheme('horizontal', 'light')"
-        >
-          <div></div>
-          <div></div>
-        </li>
-      </el-tooltip>
+      <li
+        :class="systemLayout === 'vertical' ? $style.isSelect : ''"
+        ref="verticalDarkDom"
+        @click="setTheme('vertical')"
+      >
+        <div></div>
+        <div></div>
+      </li>
+      <li
+        :class="
+          systemLayout === 'horizontal' ? $style.isSelect : ''
+        "
+        ref="horizontalDarkDom"
+        @click="setTheme('horizontal')"
+      >
+        <div></div>
+        <div></div>
+      </li>
+      <div class="selectColor">
+        <span>主色：</span>
+        <input type="color" @change="(e) => { changeMainColor(e, '--main-color') }" />
+      </div>
+      <div class="selectColor">
+        <span>辅色：</span>
+        <input type="color" @change="(e) => { changeMainColor(e, '--auxiliary-color') }" />
+      </div>
+      <div class="selectColor">
+        <span>导航栏文字色：</span>
+        <input type="color" @change="(e) => { changeMainColor(e, '--text-color') }" />
+      </div>
     </ul>
 
     <el-divider>界面显示</el-divider>
@@ -235,56 +184,25 @@ function setTheme(layout: string, theme: string) {
       <li>
         <span>灰色模式</span>
         <el-switch v-model="settings.greyVal" @change="greyChange" />
-        <!-- <vxe-switch
-          v-model="settings.greyVal"
-          open-label="开"
-          close-label="关"
-          @change="greyChange"
-        ></vxe-switch> -->
       </li>
       <li>
         <span>色弱模式</span>
         <el-switch v-model="settings.weekVal" @change="weekChange" />
-        <!-- <vxe-switch
-          v-model="settings.weekVal"
-          open-label="开"
-          close-label="关"
-          @change="weekChange"
-        ></vxe-switch> -->
       </li>
       <li>
         <span>隐藏标签页</span>
         <el-switch v-model="settings.tagsVal" @change="tagsChange" />
-        <!-- <vxe-switch
-          v-model="settings.tagsVal"
-          open-label="开"
-          close-label="关"
-          @change="tagsChange"
-        ></vxe-switch> -->
       </li>
       <li>
         <span>侧边栏Logo</span>
         <el-switch v-model="logoVal" @change="logoChange" />
-        <!-- <vxe-switch
-          v-model="logoVal"
-          open-value="1"
-          close-value="-1"
-          open-label="开"
-          close-label="关"
-          @change="logoChange"
-        ></vxe-switch> -->
       </li>
-
       <li>
         <span>标签风格</span>
         <el-radio-group v-model="markValue" @change="onChange">
           <el-radio label="card">卡片</el-radio>
           <el-radio label="smart">灵动</el-radio>
         </el-radio-group>
-        <!-- <vxe-radio-group v-model="markValue" @change="onChange">
-          <vxe-radio label="card" content="卡片"></vxe-radio>
-          <vxe-radio label="smart" content="灵动"></vxe-radio>
-        </vxe-radio-group> -->
       </li>
     </ul>
     <el-divider />
@@ -317,7 +235,7 @@ function setTheme(layout: string, theme: string) {
 .theme-stley {
   margin-top: 25px;
   width: 100%;
-  height: 180px;
+  height: 200px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-around;
@@ -334,26 +252,6 @@ function setTheme(layout: string, theme: string) {
     box-shadow: 0 1px 2.5px 0 rgb(0 0 0 / 18%);
 
     &:nth-child(1) {
-      div {
-        &:nth-child(1) {
-          width: 30%;
-          height: 100%;
-          background: #1b2a47;
-        }
-
-        &:nth-child(2) {
-          width: 70%;
-          height: 30%;
-          top: 0;
-          right: 0;
-          background: #fff;
-          box-shadow: 0 0 1px #888;
-          position: absolute;
-        }
-      }
-    }
-
-    &:nth-child(2) {
       div {
         &:nth-child(1) {
           width: 30%;
@@ -375,18 +273,7 @@ function setTheme(layout: string, theme: string) {
       }
     }
 
-    &:nth-child(3) {
-      div {
-        &:nth-child(1) {
-          width: 100%;
-          height: 30%;
-          background: #1b2a47;
-          box-shadow: 0 0 1px #888;
-        }
-      }
-    }
-
-    &:nth-child(4) {
+    &:nth-child(2) {
       div {
         &:nth-child(1) {
           width: 100%;
@@ -396,6 +283,12 @@ function setTheme(layout: string, theme: string) {
         }
       }
     }
+  }
+  .selectColor {
+    width: 100%;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
   }
 }
 </style>

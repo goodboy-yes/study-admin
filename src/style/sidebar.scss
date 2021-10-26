@@ -13,7 +13,8 @@
   $sideBarWidth,
   $navTextColor
 ) {
-  $menuText: #7a80b4;
+  // $menuText: #7a80b4;
+  $menuText: $navTextColor;
   $menuActiveText: #7a80b4;
 
   .main-container {
@@ -534,36 +535,21 @@ body[data-layout="horizontal"] {
   }
 }
 
-// vertical模式下暗色主题
-body[data-layout="vertical"][data-theme="dark"] {
-  $subMenuActiveText: #f4f4f5;
-  $menuBg: #1b2a47;
-  $menuHover: #2a395b;
-  $subMenuBg: #1f2d3d;
-  $subMenuHover: #001528;
-  $sideBarWidth: 210px;
-  $navTextColor: #fff;
-
-  @include merge-style(
-    $subMenuActiveText,
-    $menuBg,
-    $menuHover,
-    $subMenuBg,
-    $subMenuHover,
-    $sideBarWidth,
-    $navTextColor
-  );
+html{
+  --main-color: #1b2a47;
+  --auxiliary-color:#1f2d3d;
+  --text-color:#7a80b4;
 }
 
-// vertical模式下亮色主题
-body[data-layout="vertical"][data-theme="light"] {
-  $subMenuActiveText: #409eff;
-  $menuBg: #fff;
-  $menuHover: #e0ebf6;
-  $subMenuBg: #fff;
-  $subMenuHover: #e0ebf6;
+// vertical模式下暗色主题
+body[data-layout="vertical"] {
+  $subMenuActiveText: #f4f4f5;
+  $menuBg: var(--main-color);
+  $menuHover: #2a395b;
+  $subMenuBg: var(--auxiliary-color);
+  $subMenuHover: #001528;
   $sideBarWidth: 210px;
-  $navTextColor: #7a80b4;
+  $navTextColor: var(--text-color);
 
   @include merge-style(
     $subMenuActiveText,
@@ -577,14 +563,14 @@ body[data-layout="vertical"][data-theme="light"] {
 }
 
 // horizontal模式下暗色主题
-body[data-layout="horizontal"][data-theme="dark"] {
+body[data-layout="horizontal"]{
   $subMenuActiveText: #f4f4f5;
-  $menuBg: #1b2a47;
+  $menuBg: var(--main-color);
   $menuHover: #2a395b;
-  $subMenuBg: #1f2d3d;
+  $subMenuBg: var(--auxiliary-color);
   $subMenuHover: #001528;
   $sideBarWidth: 0;
-  $navTextColor: #fff;
+  $navTextColor: var(--text-color);
 
   @include merge-style(
     $subMenuActiveText,
@@ -597,23 +583,3 @@ body[data-layout="horizontal"][data-theme="dark"] {
   );
 }
 
-// horizontal模式下亮色主题
-body[data-layout="horizontal"][data-theme="light"] {
-  $subMenuActiveText: #409eff;
-  $menuBg: #fff;
-  $menuHover: #e0ebf6;
-  $subMenuBg: #fff;
-  $subMenuHover: #e0ebf6;
-  $sideBarWidth: 0;
-  $navTextColor: #7a80b4;
-
-  @include merge-style(
-    $subMenuActiveText,
-    $menuBg,
-    $menuHover,
-    $subMenuBg,
-    $subMenuHover,
-    $sideBarWidth,
-    $navTextColor
-  );
-}
