@@ -11,7 +11,7 @@ NProgress.configure({ showSpinner: false });
 // https://cn.vitejs.dev/guide/features.html#glob-import
 const modulesRoutes = import.meta.glob("/src/views/*/*/*.vue");
 
-export const constantRoutesArr: RouteComponent[] = [homeRouter];
+export const constantRoutesArr: RouteComponent[] = homeRouter;
 
 // 过滤meta中showLink为false的路由
 export const filterTree = (data: any[]) => {
