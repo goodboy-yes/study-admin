@@ -45,6 +45,7 @@ export interface setType {
     openSidebar: boolean;
     withoutAnimation: boolean;
   };
+  layout:string
 }
 
 export type childrenType = {

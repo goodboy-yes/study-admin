@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { getCurrentInstance } from "vue";
+import { getCurrentInstance,ref } from "vue";
+import { useSettingStoreHook } from "/@/store/modules/settings";
+
 // import Icon from "/@/components/ReIcon/src/Icon.vue";
 const props = defineProps({
   collapse: Boolean,
 });
 
-const title =
-  getCurrentInstance().appContext.config.globalProperties.$config?.Title;
+const title =ref(useSettingStoreHook().title)
 </script>
 
 <template>

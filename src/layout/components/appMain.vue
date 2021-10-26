@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, getCurrentInstance } from "vue";
 // import { usePermissionStoreHook } from "/@/store/modules/permission";
+import { useAppStoreHook } from "/@/store/modules/app";
 
-const keepAlive: Boolean = ref(
-  getCurrentInstance().appContext.config.globalProperties.$config?.KeepAlive
-);
+const keepAlive = ref(useAppStoreHook().KeepAlive)
 
 const transition = computed(() => {
   return (route) => {

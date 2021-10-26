@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { PropType, ref } from "vue";
 import { childrenType } from "/@/layout/types";
-// import Icon from "/@/components/ReIcon/src/Icon.vue";
 
 const props = defineProps({
   item: {
@@ -48,22 +47,23 @@ function hasOneShowingChild(
     "
   >
     <el-menu-item
-      :index="onlyOneChild.path"
+      :index="onlyOneChild.path || props.basePath"
       :class="{ 'submenu-title-noDropdown': !isNest }"
     >
       <template #title>
+        <i
+          :class="
+            onlyOneChild.meta.icon || (props.item.meta && props.item.meta.icon)
+          "
+        />
         <span>{{ $t(onlyOneChild.meta.title) }}</span>
       </template>
     </el-menu-item>
   </template>
 
-  <el-sub-menu
-    v-else
-    ref="subMenu"
-    :index="props.item.path"
-    popper-append-to-body
-  >
+  <el-sub-menu v-else ref="subMenu" :index="props.item.path" popper-append-to-body>
     <template #title>
+      <i :class="props.item.meta.icon"></i>
       <span>{{ $t(props.item.meta.title) }}</span>
     </template>
     <sidebar-item

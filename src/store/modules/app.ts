@@ -3,6 +3,7 @@ import { store } from "/@/store";
 import { storageLocal } from "/@/utils/storage";
 import { getCurrentInstance } from "vue";
 import { RouteRecordName } from "vue-router";
+import { RouteConfigs } from "/@/layout/types";
 
 interface AppState {
   sidebar: {
@@ -11,6 +12,9 @@ interface AppState {
   };
   layout: string;
   cachePageList: any[];
+  KeepAlive:boolean,
+  locale:string,
+  routesInStorage:RouteConfigs[]
 }
 
 type cacheType = {
@@ -21,10 +25,7 @@ export const useAppStore = defineStore({
   id: "store-app",
   state: (): AppState => {
     return {
-      layout:
-        getCurrentInstance().appContext.config.globalProperties.$config?.Layout.match(
-          /(.*)-/
-        )[1] ?? "vertical",
+      layout:'vertical',
       sidebar: {
         opened: storageLocal.getItem("sidebarStatus")
           ? !!+storageLocal.getItem("sidebarStatus")
@@ -33,11 +34,27 @@ export const useAppStore = defineStore({
       },
       // 缓存页面keepAlive
       cachePageList: [],
+      KeepAlive:true,
+      locale:'zh',
+      routesInStorage:[
+        {
+          path: "/welcome",
+          parentPath: "/",
+          meta: {
+            title: "message.hshome",
+            icon: "el-icon-s-home",
+            showLink: true,
+          },
+        },
+      ]
     };
   },
   getters: {
     getSidebarStatus(): boolean {
       return this.sidebar.opened;
+    },
+    getLayout(): string {
+      return this.layout;
     },
   },
   actions: {

@@ -4,20 +4,18 @@ import { emitter } from "/@/utils/mitt";
 import { useRouter, useRoute } from "vue-router";
 import { storageSession } from "/@/utils/storage";
 import { useAppStoreHook } from "/@/store/modules/app";
-import { unref, watch, getCurrentInstance } from "vue";
+import { unref, watch, getCurrentInstance,ref } from "vue";
 import globalization from "/@/assets/svg/globalization.svg";
 import Screenfull from "../components/screenfull/index.vue";
 import Hamburger from "./sidebar/hamBurger.vue";
 import Breadcrumb from "./sidebar/breadCrumb.vue";
 
-const instance =
-  getCurrentInstance().appContext.config.globalProperties.$storage;
 const appStore = useAppStoreHook();
 const router = useRouter();
 const route = useRoute();
 let usename = storageSession.getItem("info")?.username;
 const { locale, t } = useI18n();
-
+let systemLocale = ref(appStore.locale)
 watch(
   () => locale.value,
   () => {
@@ -25,12 +23,6 @@ watch(
     document.title = t(unref(route.meta.title)); // 动态title
   }
 );
-
-// 退出登录
-const logout = (): void => {
-  storageSession.removeItem("info");
-  router.push("/login");
-};
 
 function onPanel() {
   emitter.emit("openPanel");
@@ -42,13 +34,13 @@ function toggleSideBar() {
 
 // 简体中文
 function translationCh() {
-  instance.locale = { locale: "zh" };
+  systemLocale.value = "zh";
   locale.value = "zh";
 }
 
 // English
 function translationEn() {
-  instance.locale = { locale: "en" };
+  systemLocale.value =  "en";
   locale.value = "en";
 }
 </script>
@@ -68,8 +60,7 @@ function translationEn() {
       <Screenfull />
       <!-- 国际化 -->
       <el-dropdown trigger="click">
-        <img :src="globalization" alt="" class="globalization" />
-        <!-- <globalization /> -->
+        <globalization />
         <template #dropdown>
           <el-dropdown-menu class="translation">
             <el-dropdown-item
@@ -92,21 +83,21 @@ function translationEn() {
         </template>
       </el-dropdown>
       <!-- 退出登陆 -->
-      <!-- <el-dropdown trigger="click">
+      <el-dropdown trigger="click">
         <span class="el-dropdown-link">
           <img
-            src="https://avatars.githubusercontent.com/u/44761321?s=400&u=30907819abd29bb3779bc247910873e7c7f7c12f&v=4"
+            src="https://img1.baidu.com/it/u=224406960,1347536508&fm=26&fmt=auto"
           />
-          <p>{{ usename }}</p>
+          <p>Admin</p>
         </span>
         <template #dropdown>
           <el-dropdown-menu class="logout">
-            <el-dropdown-item icon="el-icon-switch-button" @click="logout">{{
+            <el-dropdown-item icon="el-icon-switch-button">{{
               $t("message.hsLoginOut")
             }}</el-dropdown-item>
           </el-dropdown-menu>
         </template>
-      </el-dropdown> -->
+      </el-dropdown>
       <i
         class="el-icon-setting"
         :title="$t('message.hssystemSet')"

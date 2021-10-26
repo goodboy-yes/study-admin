@@ -1,17 +1,3 @@
-<script lang="ts">
-let routerArrays: Array<RouteConfigs> = [
-  {
-    path: "/welcome",
-    parentPath: "/",
-    meta: {
-      title: "message.hshome",
-      icon: "el-icon-s-home",
-      showLink: true,
-    },
-  },
-];
-</script>
-
 <script setup lang="ts">
 import {
   ref,
@@ -30,6 +16,7 @@ import { storageLocal } from "/@/utils/storage";
 import { useRoute, useRouter, RouteRecordNormalized } from "vue-router";
 import { useAppStoreHook } from "/@/store/modules/app";
 import { toggleClass, removeClass, hasClass } from "/@/utils";
+import { storeToRefs } from 'pinia'
 
 import close from "/@/assets/svg/close.svg";
 import refresh from "/@/assets/svg/refresh.svg";
@@ -41,8 +28,8 @@ import closeRight from "/@/assets/svg/close_right.svg";
 let refreshButton = "refresh-button";
 const instance = getCurrentInstance();
 
-// 响应式storage
-let relativeStorage: relativeStorageType;
+const store = useAppStoreHook()
+let { routesInStorage: routerArrays } = storeToRefs(store)
 const route = useRoute();
 const router = useRouter();
 const showTags = ref(storageLocal.getItem("tagsVal") || false);
@@ -61,41 +48,38 @@ const tagsViews = ref<Array<tagsViewsType>>([
     icon: close,
     text: "message.hscloseCurrentTab",
     divided: false,
-    disabled: routerArrays.length > 1 ? false : true,
+    disabled: routerArrays.value.length > 1 ? false : true,
     show: true,
   },
   {
     icon: closeLeft,
     text: "message.hscloseLeftTabs",
     divided: true,
-    disabled: routerArrays.length > 1 ? false : true,
+    disabled: routerArrays.value.length > 1 ? false : true,
     show: true,
   },
   {
     icon: closeRight,
     text: "message.hscloseRightTabs",
     divided: false,
-    disabled: routerArrays.length > 1 ? false : true,
+    disabled: routerArrays.value.length > 1 ? false : true,
     show: true,
   },
   {
     icon: closeOther,
     text: "message.hscloseOtherTabs",
     divided: true,
-    disabled: routerArrays.length > 2 ? false : true,
+    disabled: routerArrays.value.length > 2 ? false : true,
     show: true,
   },
   {
     icon: closeAll,
     text: "message.hscloseAllTabs",
     divided: false,
-    disabled: routerArrays.length > 1 ? false : true,
+    disabled: routerArrays.value.length > 1 ? false : true,
     show: true,
   },
 ]);
-const dynamicTagList: ComputedRef<Array<RouteConfigs>> = computed(() => {
-  return relativeStorage.routesInStorage;
-});
 
 // 显示模式，默认灵动模式显示
 const showModel = ref(storageLocal.getItem("showModel") || "smart");
@@ -111,7 +95,7 @@ let buttonTop = ref(0);
 let currentSelect = ref({});
 
 function dynamicRouteTag(value: string, parentPath: string): void {
-  const hasValue = relativeStorage.routesInStorage.some((item: any) => {
+  const hasValue = routerArrays.value.some((item: any) => {
     return item.path === value;
   });
 
@@ -120,13 +104,12 @@ function dynamicRouteTag(value: string, parentPath: string): void {
       arr.forEach((arrItem: any) => {
         let pathConcat = parentPath + arrItem.path;
         if (arrItem.path === value || pathConcat === value) {
-          routerArrays.push({
+          routerArrays.value.push({
             path: value,
             parentPath: `/${parentPath.split("/")[1]}`,
             meta: arrItem.meta,
             name: arrItem.name,
           });
-          relativeStorage.routesInStorage = routerArrays;
         } else {
           if (arrItem.children && arrItem.children.length > 0) {
             concatPath(arrItem.children, value, parentPath);
@@ -153,13 +136,13 @@ function onFresh() {
 function deleteDynamicTag(obj: any, current: any, tag?: string) {
   // 存放被删除的缓存路由
   let delAliveRouteList = [];
-  let valueIndex: number = routerArrays.findIndex((item: any) => {
+  let valueIndex: number = routerArrays.value.findIndex((item: any) => {
     return item.path === obj.path;
   });
 
   const spliceRoute = (start?: number, end?: number, other?: boolean): void => {
     if (other) {
-      relativeStorage.routesInStorage = [
+      routerArrays.value = [
         {
           path: "/welcome",
           parentPath: "/",
@@ -171,10 +154,8 @@ function deleteDynamicTag(obj: any, current: any, tag?: string) {
         },
         obj,
       ];
-      routerArrays = relativeStorage.routesInStorage;
     } else {
-      delAliveRouteList = routerArrays.splice(start, end);
-      relativeStorage.routesInStorage = routerArrays;
+      delAliveRouteList = routerArrays.value.splice(start, end);
     }
   };
 
@@ -183,12 +164,12 @@ function deleteDynamicTag(obj: any, current: any, tag?: string) {
   } else if (tag === "left") {
     spliceRoute(1, valueIndex - 1);
   } else if (tag === "right") {
-    spliceRoute(valueIndex + 1, routerArrays.length);
+    spliceRoute(valueIndex + 1, routerArrays.value.length);
   } else {
     // 从当前匹配到的路径中删除
     spliceRoute(valueIndex, 1);
   }
-  let newRoute: any = routerArrays.slice(-1);
+  let newRoute: any = routerArrays.value.slice(-1);
   if (current === route.path) {
     // 删除缓存路由
     tag
@@ -204,8 +185,8 @@ function deleteDynamicTag(obj: any, current: any, tag?: string) {
   } else {
     // 删除缓存路由
     tag ? delAliveRoutes(delAliveRouteList) : delAliveRoutes([obj]);
-    if (!routerArrays.length) return;
-    let isHasActiveTag = routerArrays.some((item) => {
+    if (!routerArrays.value.length) return;
+    let isHasActiveTag = routerArrays.value.some((item) => {
       return item.path === route.path;
     });
     !isHasActiveTag &&
@@ -231,55 +212,53 @@ function onClickDrop(key, item, selectRoute?: RouteConfigs) {
       // 关闭当前标签页
       selectRoute
         ? deleteMenu({
-            path: selectRoute.path,
-            meta: selectRoute.meta,
-            name: selectRoute.name,
-          })
+          path: selectRoute.path,
+          meta: selectRoute.meta,
+          name: selectRoute.name,
+        })
         : deleteMenu({ path: route.path, meta: route.meta });
       break;
     case 2:
       // 关闭左侧标签页
       selectRoute
         ? deleteMenu(
-            {
-              path: selectRoute.path,
-              meta: selectRoute.meta,
-            },
-            "left"
-          )
+          {
+            path: selectRoute.path,
+            meta: selectRoute.meta,
+          },
+          "left"
+        )
         : deleteMenu({ path: route.path, meta: route.meta }, "left");
       break;
     case 3:
       // 关闭右侧标签页
       selectRoute
         ? deleteMenu(
-            {
-              path: selectRoute.path,
-              meta: selectRoute.meta,
-            },
-            "right"
-          )
+          {
+            path: selectRoute.path,
+            meta: selectRoute.meta,
+          },
+          "right"
+        )
         : deleteMenu({ path: route.path, meta: route.meta }, "right");
       break;
     case 4:
       // 关闭其他标签页
       selectRoute
         ? deleteMenu(
-            {
-              path: selectRoute.path,
-              meta: selectRoute.meta,
-            },
-            "other"
-          )
+          {
+            path: selectRoute.path,
+            meta: selectRoute.meta,
+          },
+          "other"
+        )
         : deleteMenu({ path: route.path, meta: route.meta }, "other");
       break;
     case 5:
       // 关闭全部标签页
-      routerArrays.splice(1, routerArrays.length);
-      relativeStorage.routesInStorage = routerArrays;
+      routerArrays.value.splice(1, routerArrays.value.length);
       useAppStoreHook().clearAllCachePage();
       router.push("/welcome");
-
       break;
   }
   setTimeout(() => {
@@ -310,8 +289,8 @@ function disabledMenus(value: boolean) {
 
 // 检查当前右键的菜单两边是否存在别的菜单，如果左侧的菜单是首页，则不显示关闭左侧标签页，如果右侧没有菜单，则不显示关闭右侧标签页
 function showMenuModel(currentPath: string, refresh = false) {
-  let allRoute = unref(relativeStorage.routesInStorage);
-  let routeLength = unref(relativeStorage.routesInStorage).length;
+  let allRoute = unref(routerArrays);
+  let routeLength = unref(routerArrays).length;
   // currentIndex为1时，左侧的菜单是首页，则不显示关闭左侧标签页
   let currentIndex = allRoute.findIndex((v) => v.path === currentPath);
   // 如果currentIndex等于routeLength-1，右侧没有菜单，则不显示关闭右侧标签页
@@ -362,7 +341,7 @@ function openMenu(tag, e) {
     showMenuModel(tag.path);
   } else if (
     // eslint-disable-next-line no-dupe-else-if
-    relativeStorage.routesInStorage.length === 2 &&
+    routerArrays.value.length === 2 &&
     route.path !== tag.path
   ) {
     showMenus(true);
@@ -473,9 +452,6 @@ watch(
 
 onBeforeMount(() => {
   if (!instance) return;
-  relativeStorage = instance.appContext.app.config.globalProperties.$storage;
-  routerArrays = relativeStorage.routesInStorage ?? routerArrays;
-
   // 根据当前路由初始化操作标签页的禁用状态
   showMenuModel(route.fullPath);
 
@@ -498,13 +474,14 @@ onBeforeMount(() => {
     });
   });
 });
+
 </script>
 
 <template>
   <div ref="containerDom" class="tags-view" v-if="!showTags">
     <el-scrollbar wrap-class="scrollbar-wrapper" class="scroll-container">
       <div
-        v-for="(item, index) in dynamicTagList"
+        v-for="(item, index) in routerArrays"
         :key="index"
         :ref="'dynamic' + index"
         :class="[
@@ -518,9 +495,11 @@ onBeforeMount(() => {
         @mouseenter.prevent="onMouseenter(item, index)"
         @mouseleave.prevent="onMouseleave(item, index)"
       >
-        <router-link :to="item.path" @click="tagOnClick(item)">{{
-          $t(item.meta.title)
-        }}</router-link>
+        <router-link :to="item.path" @click="tagOnClick(item)">
+          {{
+            $t(item.meta.title)
+          }}
+        </router-link>
         <span
           v-if="
             ($route.path === item.path && index !== 0) ||
@@ -544,14 +523,9 @@ onBeforeMount(() => {
         :style="{ left: buttonLeft + 'px', top: buttonTop + 'px' }"
         class="contextmenu"
       >
-        <div
-          v-for="(item, key) in tagsViews"
-          :key="key"
-          style="display: flex; align-items: center"
-        >
+        <div v-for="(item, key) in tagsViews" :key="key" style="display: flex; align-items: center">
           <li v-if="item.show" @click="selectTag(key, item)">
-            <img :src="item.icon" alt="" />
-            <!-- <component :is="item.icon" :key="key" /> -->
+            <component :is="item.icon" :key="key" />
             {{ $t(item.text) }}
           </li>
         </div>
@@ -559,33 +533,6 @@ onBeforeMount(() => {
     </transition>
     <!-- 右侧功能按钮 -->
     <ul class="right-button">
-      <li>
-        <i
-          :title="$t('message.hsrefreshRoute')"
-          class="el-icon-refresh-right rotate"
-          @click="onFresh"
-        ></i>
-      </li>
-      <li>
-        <el-dropdown trigger="click" placement="bottom-end">
-          <i class="el-icon-arrow-down"></i>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item
-                v-for="(item, key) in tagsViews"
-                :key="key"
-                :divided="item.divided"
-                :disabled="item.disabled"
-                @click="onClickDrop(key, item)"
-              >
-                <img :src="item.icon" alt="" />
-                <!-- <component :is="item.icon" :key="key" /> -->
-                {{ $t(item.text) }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </li>
       <li>
         <slot></slot>
       </li>
