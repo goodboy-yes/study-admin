@@ -22,7 +22,7 @@ const { isSelect } = useCssModule();
 // 默认灵动模式
 const markValue = ref(storageLocal.getItem("showModel") || "smart");
 
-const logoVal = ref(storageLocal.getItem("logoVal") || "1");
+const logoVal = ref(storageLocal.getItem("logoVal") ?? true);
 
 const localOperate = (key: string, value?: any, model?: string): any => {
   model && model === "set"
@@ -93,7 +93,7 @@ const horizontalDarkDom = templateRef<HTMLElement | null>(
   null
 );
 const store = useAppStoreHook()
-const { layout:systemLayout } = storeToRefs(store)
+const { layout: systemLayout } = storeToRefs(store)
 
 if (unref(systemLayout)) {
   // 设置导航模式
@@ -102,9 +102,7 @@ if (unref(systemLayout)) {
 
 // 侧边栏Logo
 function logoChange() {
-  unref(logoVal) === "1"
-    ? storageLocal.setItem("logoVal", "1")
-    : storageLocal.setItem("logoVal", "-1");
+  storageLocal.setItem("logoVal", unref(logoVal))
   emitter.emit("logoChange", unref(logoVal));
 }
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { getCurrentInstance,ref } from "vue";
 import { useSettingStoreHook } from "/@/store/modules/settings";
+import Icon from "/@/components/Icon.vue";
 
-// import Icon from "/@/components/ReIcon/src/Icon.vue";
 const props = defineProps({
   collapse: Boolean,
 });
@@ -20,7 +20,7 @@ const title =ref(useSettingStoreHook().title)
         class="sidebar-logo-link"
         to="/"
       >
-        <!-- <Icon svg :width="35" :height="35" content="team-iconshuiyuandi" /> -->
+        <Icon svg :width="35" :height="35" content="team-iconshuiyuandi" />
         <span class="sidebar-title">{{ title }}</span>
       </router-link>
       <router-link
@@ -30,7 +30,8 @@ const title =ref(useSettingStoreHook().title)
         class="sidebar-logo-link"
         to="/"
       >
-        <!-- <Icon svg :width="35" :height="35" content="team-iconshuiyuandi" /> -->
+        <Icon svg :width="35" :height="35" content="team-iconshuiyuandi" />
+        <i class="fa fa-optin-monster"></i>
         <span class="sidebar-title">{{ title }}</span>
       </router-link>
     </transition>
@@ -58,6 +59,12 @@ const title =ref(useSettingStoreHook().title)
       font-size: 20px;
       margin-top: 10px;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
+    }
+
+    .fa-optin-monster {
+      font-size: 30px;
+      color: #1890ff;
+      margin-top: 5px;
     }
   }
 

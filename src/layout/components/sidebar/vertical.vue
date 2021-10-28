@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// import Logo from "./logo.vue";
+import Logo from "./logo.vue";
 import { emitter } from "/@/utils/mitt";
 import SidebarItem from "./sidebarItem.vue";
 import { algorithm } from "/@/utils/algorithm";
@@ -14,7 +14,7 @@ const route = useRoute();
 const appStore = useAppStoreHook();
 const router = useRouter().options.routes;
 // const routeStore = usePermissionStoreHook();
-// const showLogo = ref(storageLocal.getItem("logoVal") || "1");
+const showLogo = ref(storageLocal.getItem("logoVal") ?? true);
 const isCollapse = computed(() => {
   return !appStore.getSidebarStatus;
 });
@@ -51,16 +51,16 @@ const menuSelect = (indexPath: string): void => {
   findCurrentRoute(algorithm.increaseIndexes(router));
 };
 
-// onBeforeMount(() => {
-//   emitter.on("logoChange", (key) => {
-//     showLogo.value = key;
-//   });
-// });
+onBeforeMount(() => {
+  emitter.on("logoChange", (key) => {
+    showLogo.value = key;
+  });
+});
 </script>
 
 <template>
   <div :class="['sidebar-container']">
-    <!-- <Logo v-if="showLogo === '1'" :collapse="isCollapse" /> -->
+    <Logo v-if="showLogo" :collapse="isCollapse" />
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu
         :default-active="activeMenu"
@@ -70,11 +70,13 @@ const menuSelect = (indexPath: string): void => {
         :collapse-transition="false"
         mode="vertical"
         @select="menuSelect"
+        class="outer-most"
       >
         <sidebar-item
           v-for="route in filterTree(ascending(constantRoutesArr))"
           :key="route.path"
           :item="route"
+          class="outer-most"
           :base-path="route.path"
         />
       </el-menu>

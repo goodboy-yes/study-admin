@@ -49,21 +49,25 @@ function hasOneShowingChild(
     <el-menu-item
       :index="onlyOneChild.path || props.basePath"
       :class="{ 'submenu-title-noDropdown': !isNest }"
+      style="display: flex; align-items: center"
     >
+      <i
+        v-show="props.item.meta.icon"
+        :class="
+          onlyOneChild.meta.icon || (props.item.meta && props.item.meta.icon)
+        "
+      />
       <template #title>
-        <i
-          :class="
-            onlyOneChild.meta.icon || (props.item.meta && props.item.meta.icon)
-          "
-        />
-        <span>{{ $t(onlyOneChild.meta.title) }}</span>
+        <div style="display: flex; align-items: center">
+          <span>{{ $t(onlyOneChild.meta.title) }}</span>
+        </div>
       </template>
     </el-menu-item>
   </template>
 
   <el-sub-menu v-else ref="subMenu" :index="props.item.path" popper-append-to-body>
     <template #title>
-      <i :class="props.item.meta.icon"></i>
+      <i v-show="props.item.meta.icon" :class="props.item.meta.icon"></i>
       <span>{{ $t(props.item.meta.title) }}</span>
     </template>
     <sidebar-item

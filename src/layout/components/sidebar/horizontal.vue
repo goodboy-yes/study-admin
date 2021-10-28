@@ -116,7 +116,7 @@ onMounted(() => {
 <template>
   <div class="horizontal-header">
     <div class="horizontal-header-left" @click="backHome">
-      <!-- <Icon svg :width="35" :height="35" content="team-iconshuiyuandi" /> -->
+      <Icon svg :width="35" :height="35" content="team-iconshuiyuandi" />
       <h4>{{ title }}</h4>
     </div>
     <el-menu
